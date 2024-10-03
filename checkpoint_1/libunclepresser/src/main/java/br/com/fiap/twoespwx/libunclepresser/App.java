@@ -20,9 +20,6 @@ import java.nio.file.Paths;
 public class App {
 
     public static String compressRLE(String inp) {
-        if (inp == null || inp.isEmpty()) {
-            return "";
-        }
 
         StringBuilder compressed = new StringBuilder();
         int count = 1;
