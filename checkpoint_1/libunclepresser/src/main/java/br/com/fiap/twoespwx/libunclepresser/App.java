@@ -14,59 +14,31 @@
 package br.com.fiap.twoespwx.libunclepresser;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.List;
 
 public class App {
-
-    public static String compressRLE(String inp) {
-
-        StringBuilder compressed = new StringBuilder();
-        int count = 1;
-        for (int i = 1; i < inp.length(); i++) {
-            if (inp.charAt(i) == inp.charAt(i - 1)) {
-                count++;
-            } else {
-                compressed.append(inp.charAt(i - 1)).append(count);
-                count = 1;
-            }
-        }
-        compressed.append(inp.charAt(inp.length() - 1)).append(count);
-        return compressed.toString();
-    }
-
     public static void main(String[] args) {
         String inputFile = args[0];
         String outputFile = args[1];
 
+        NucleotidesCompresser nucleotidesCompresser = new NucleotidesCompresser();
+
         try {
-            String inputText = new String(Files.readAllBytes(Paths.get(inputFile)));
+            List<String> inputLines = FileHandler.readFile(inputFile);
 
-            long inputFileSize = Files.size(Paths.get(inputFile));
+            StringBuilder compressedOutput = new StringBuilder();
+            for (String line : inputLines) {
+                line = line.trim();
 
-            String compressedText = compressRLE(inputText);
-            long outputFileSize = compressedText.length();
+                compressedOutput.append(nucleotidesCompresser.compress(line)).append(System.lineSeparator());
+            }
 
-            double compressionRate = ((double) outputFileSize / inputFileSize) * 100;
+            FileHandler.writeFile(outputFile, compressedOutput.toString());
 
-            String summary = String.format(
-                    " -----------------------------------------------------------\n" +
-                            "|           LIB UNCLE PRESSER - GRUPO 2           |\n" +
-                            " -----------------------------------------------------------\n" +
-                            "| INPUT  FILENAME: %s\n" +
-                            "| OUTPUT FILENAME: %s\n" +
-                            "| INPUT FILE SIZE: %d BYTES\n" +
-                            "| OUTPUT FILE SIZE: %d BYTES\n" +
-                            "| COMPRESSION RATE: =~ %.2f%%\n" +
-                            " -----------------------------------------------------------\n",
-                    inputFile, outputFile, inputFileSize, outputFileSize, compressionRate
-            );
 
-            Files.write(Paths.get(outputFile), summary.getBytes());
-
+            SummaryPrinter.printSummary(inputFile, outputFile, inputLines, compressedOutput.toString());
         } catch (IOException e) {
-            System.out.println("Erro ao ler ou escrever arquivos: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erro ao processar os arquivos: " + e.getMessage());
         }
     }
 }
